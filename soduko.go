@@ -9,11 +9,6 @@ import (
 	"strings"
 )
 
-var (
-	errOutOfRange      = errors.New("out of range")
-	errNewlineExpected = errors.New("expected newline")
-)
-
 const (
 	topRow    = "┌───────┬───────┬───────┐\n"
 	midRow    = "├───────┼───────┼───────┤\n"
@@ -22,6 +17,9 @@ const (
 	rowEnd    = "│\n"
 )
 
+var errOutOfRange = errors.New("out of range")
+
+// soduko is indexed by row x column.
 type suduko [9][9]int
 
 func (s *suduko) String() string {
@@ -56,11 +54,17 @@ func (s *suduko) String() string {
 func (s *suduko) read(r io.Reader) error {
 	br := bufio.NewReader(r)
 
-	// Read: "┌───────┬───────┬───────┐\n"
-	if s, err := br.ReadString('\n'); err != nil {
-		return err
-	} else if s != topRow {
-		return fmt.Errorf("unexpected row: %s", s)
+	for {
+		// Read: "┌───────┬───────┬───────┐\n"
+		if s, err := br.ReadString('\n'); err != nil {
+			return err
+		} else if strings.HasPrefix(s, "#") {
+			continue
+		} else if s == topRow {
+			break
+		} else {
+			return fmt.Errorf("unexpected row: %s", s)
+		}
 	}
 
 	for i := 0; i < 9; i++ {
@@ -132,4 +136,71 @@ func (s *suduko) read(r io.Reader) error {
 	}
 
 	return nil
+}
+
+func (s *suduko) isPartialValid() bool {
+	// Check bounds.
+	for i := 0; i < 9; i++ {
+		for j := 0; j < 9; j++ {
+			if s[i][j] < 0 || s[i][j] > 9 {
+				return false
+			}
+		}
+	}
+
+	// Check rows.
+	for i := 0; i < 9; i++ {
+		var uniq [10]int
+		for j := 0; j < 9; j++ {
+			uniq[s[i][j]]++
+		}
+		for j := 1; j < 10; j++ {
+			if uniq[j] > 1 {
+				return false
+			}
+		}
+	}
+
+	// Check columns.
+	for j := 0; j < 9; j++ {
+		var uniq [10]int
+		for i := 0; i < 9; i++ {
+			uniq[s[i][j]]++
+		}
+		for i := 1; i < 10; i++ {
+			if uniq[i] > 1 {
+				return false
+			}
+		}
+	}
+
+	// Check squares.
+	for i := 0; i < 9; i++ {
+		var uniq [10]int
+		for j := 0; j < 9; j++ {
+			row := ((i / 3) * 3) + (j / 3)
+			col := ((i % 3) * 3) + (j % 3)
+			uniq[s[row][col]]++
+		}
+		for j := 1; j < 10; j++ {
+			if uniq[j] > 1 {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func (s *suduko) isValid() bool {
+	// Check it has no zeros.
+	for i := 0; i < 9; i++ {
+		for j := 0; j < 9; j++ {
+			if s[i][j] == 0 {
+				return false
+			}
+		}
+	}
+
+	return s.isPartialValid()
 }
