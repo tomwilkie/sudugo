@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	var s suduko
+	var s sudoku
 
 	if err := s.read(os.Stdin); err != nil {
 		log.Fatal("Failed to read suduko from stdin, error:", err)
@@ -29,7 +29,7 @@ func main() {
 	fmt.Println(s.String())
 }
 
-func solve(s *suduko) error {
+func solve(s *sudoku) error {
 	// First copy over all the fixed cells.
 	result := *s
 

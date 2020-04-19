@@ -20,9 +20,9 @@ const (
 var errOutOfRange = errors.New("out of range")
 
 // soduko is indexed by row x column.
-type suduko [9][9]int
+type sudoku [9][9]int
 
-func (s *suduko) String() string {
+func (s *sudoku) String() string {
 	var b strings.Builder
 
 	b.WriteString(topRow)
@@ -51,7 +51,7 @@ func (s *suduko) String() string {
 	return b.String()
 }
 
-func (s *suduko) read(r io.Reader) error {
+func (s *sudoku) read(r io.Reader) error {
 	br := bufio.NewReader(r)
 
 	for {
@@ -138,7 +138,7 @@ func (s *suduko) read(r io.Reader) error {
 	return nil
 }
 
-func (s *suduko) isPartialValid() bool {
+func (s *sudoku) isPartialValid() bool {
 	// Check bounds.
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 9; j++ {
@@ -192,7 +192,7 @@ func (s *suduko) isPartialValid() bool {
 	return true
 }
 
-func (s *suduko) isValid() bool {
+func (s *sudoku) isValid() bool {
 	// Check it has no zeros.
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 9; j++ {
